@@ -2,9 +2,7 @@
 
 myaidlc は、Claude Code で既存プロジェクトへの機能追加とバグ修正を進めるためのワークフローです。AI-DLC（AI-Driven Development Life Cycle）を最小限に組み直したもので、プロジェクトの `.claude/` にコピーするだけで使えます。
 
-参考のために公開している個人用のリポジトリで、オープンソースプロジェクトではありません。ライセンスはなく、サポートも、Issue や Pull Request の受け付けもしていません。
-
-- **人が運転する**：何を作るかを決め、各ゲートで結果を承認します。スキップ・前の工程への戻り・中断はいつでもできます。
+- **人が制御する**：何を作るかを決め、各ゲートで結果を承認します。スキップ・前の工程への戻り・中断はいつでもできます。
 - **エンジンが帳簿をつける**：bash + jq のスクリプトが次のステップを決め、状態・監査ログ・承認の証跡・レビュー記録・コードのガードを管理します。
 - **コンダクターが作業する**：`/myaidlc` skill が 1 ステップずつ進めます。
   - コードは、変更箇所の付近だけを Explore（Haiku）で読みます。
@@ -12,7 +10,7 @@ myaidlc は、Claude Code で既存プロジェクトへの機能追加とバグ
 
 5 フェーズ・10 ステージ・3 agent・2 スコープ（`feature` と `bugfix`）で構成しています。
 
-- 設計の考え方は [AI-DLC（awslabs/aidlc-workflows）](https://github.com/awslabs/aidlc-workflows) を参考にしていますが、文章とコードは一から書いています。
+- 設計の考え方は [AI-DLC（awslabs/aidlc-workflows）](https://github.com/awslabs/aidlc-workflows) を参考にしています。
 - 特定の言語・フレームワーク・ブランチ運用を前提にしません。
 - 必要なのは bash 3.2 以降、jq、git です。
 
