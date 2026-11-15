@@ -1,0 +1,8 @@
+# Core set: the myaidlc workflow. Each line is an item under claude/
+docs/myaidlc.md
+docs/dev-guideline.md
+skills/myaidlc
+skills/myaidlc-setup
+agents/myaidlc-product-agent.md
+agents/myaidlc-architect-agent.md
+agents/myaidlc-developer-agent.md

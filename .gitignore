@@ -1,0 +1,5 @@
+.DS_Store
+ref/
+/docs/
+.env
+claude/settings.json
