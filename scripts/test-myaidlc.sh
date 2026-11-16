@@ -125,6 +125,7 @@ run_suite() {
   check "functional design completed" R completed
 
   check "code generation plan step" next_is .step plan
+  check "the next step of the same unit is not a break point" next_is .break_point false
   check "code generation started" R started
   make_file "$(outdir)/code-plan.md"
   refused "the plan needs a document review" R plan-ready
@@ -148,6 +149,7 @@ run_suite() {
   refused "units cannot change once construction started" E units --set other
 
   check "second unit" next_is .unit search-ui
+  check "a new unit is a break point" next_is .break_point true
   check "fd2 started" R started
   make_file "$(outdir)/functional-design.md"
   check "fd2 completed" R completed
@@ -171,6 +173,8 @@ run_suite() {
   check "cg2 approved" R approved
 
   check "build and test" next_is .stage build-and-test
+  check "the step after the last unit is a break point" next_is .break_point true
+  check "build and test reads the intent" is "$(E next | jq '[.consumes[] | select(test("intent.md"))] | length')" 1
   check "build and test consumes both plans" is "$(E next | jq '[.consumes[] | select(test("code-plan.md"))] | length')" 2
   check "bt started" R started
   check "code writable while testing" write_hook src/app.txt
@@ -181,6 +185,7 @@ run_suite() {
   check "bt approved" R approved
 
   check "handoff" next_is .stage handoff
+  check "a new phase after construction is a break point" next_is .break_point true
   refused "code locked at handoff" write_hook src/app.txt
   check "handoff started" R started
   make_file "$(outdir)/handoff.md"
@@ -195,19 +200,23 @@ run_suite() {
   prompt "/myaidlc Login fails with ghp_FAKEFAKEFAKEFAKEFAKEFAKE0000"
   check "start a bugfix" is "$(E start --scope bugfix --label login | jq -r .stage)" intent-capture
   check "the prompt is masked" hasnt "$T/docs/myaidlc/.runtime/last-prompt.txt" ghp_FAKE
+  check "the first step after start is not a break point" next_is .break_point false
   check "bf intent started" R started
   make_file "$(outdir)/intent.md"
   check "bf intent review" review doc 0 0 0 0 ""
   check "bf intent gate" R awaiting
   prompt "yes"
   check "bf intent approved" R approved
+  check "a new phase is a break point" next_is .break_point true
   check "bf re started" R started
+  check "a started step is not a break point" next_is .break_point false
   make_file "$(outdir)/codemap.md"
   refused "in bugfix, reverse engineering ends inception and needs a review" R completed
   prompt "skip the review"
   check "review skipped at the person's request" E review-skip --stage reverse-engineering --kind doc
   check "bf re completed" R completed
   check "bugfix builds the default unit" next_is .unit main
+  check "construction after inception is a break point" next_is .break_point true
   check "bf cg started" R started
   check "default unit recorded" has "$(AUDIT login)" 'Units\*\*: main'
 
@@ -228,6 +237,7 @@ run_suite() {
   prompt "go back to the intent"
   check "jump back" E jump --stage intent-capture
   check "intent reopened" next_is .status pending
+  check "a step jumped back to is not a break point" next_is .break_point false
   check "ideation is no longer verified" has "$(STATEMD login)" '\*\*Ideation\*\*: Pending'
 
   check "learn a rule" bash -c "$(declare -f E); T='$T'; BASH_BIN='$BASH_BIN'; printf 'Use the project logger, never print.' | E learn --rule-file -"
@@ -267,6 +277,7 @@ run_suite() {
   check "skip the step that ends the phase" R skipped
   check "the phase review is recorded as skipped with it" has "$(AUDIT extra)" 'the review of this phase'"'"'s documents was skipped'
   check "the first unit is the first planned" next_is .unit zeta
+  check "a new phase after a skipped step is a break point" next_is .break_point true
   check "x fd started" R started
   make_file "$(outdir)/functional-design.md"
   check "x fd completed" R completed
@@ -291,6 +302,7 @@ run_suite() {
   check "jumping to the current step starts it over" E jump --stage code-generation --unit zeta
   check "the plan is open again" next_is .step plan
   check "and the step is not started" next_is .status pending
+  check "a step started over is not a break point" next_is .break_point false
   refused "a unit that does not exist is refused" E jump --stage code-generation --unit nope
   refused "a path with .. cannot reach the engine's files" write_hook "src/../docs/myaidlc/intents/x/state.json"
 
@@ -311,6 +323,25 @@ run_suite() {
   check "nh review" review doc 0 0 0 0 ""
   check "nh gate" R awaiting
   check "approval stands aside with a note" bash -c "$(declare -f E R); T='$T'; BASH_BIN='$BASH_BIN'; R approved | grep -q 'hooks are not installed'"
+
+  # ---- small scope: intent, code map, one unit, tests, handoff ----
+  check "start a small change" bash -c "$(declare -f E); T='$T'; BASH_BIN='$BASH_BIN'; printf 'Rename the button' | E start --scope small --label rename --request-file - | jq -e '.stage == \"intent-capture\" and .scope == \"small\" and .depth == \"minimal\"' >/dev/null"
+  check "small has no requirements step" has "$(STATEMD rename)" 'requirements-analysis — not in scope'
+  check "small has no delivery plan" has "$(STATEMD rename)" 'delivery-planning — not in scope'
+  check "small has no functional design" has "$(STATEMD rename)" 'functional-design — not in scope'
+  check "sm intent started" R started
+  make_file "$(outdir)/intent.md"
+  check "sm intent review" review doc 0 0 0 0 ""
+  check "sm intent gate" R awaiting
+  check "sm intent approved" R approved
+  check "sm code map is a break point" next_is .break_point true
+  check "sm re started" R started
+  make_file "$(outdir)/codemap.md"
+  refused "in small, reverse engineering ends inception and needs a review" R completed
+  check "sm re review" review doc 0 0 0 0 ""
+  check "sm re completed" R completed
+  check "small builds the default unit" next_is .unit main
+  check "small code generation reads the intent" is "$(E next | jq '[.consumes[] | select(test("intent.md"))] | length')" 1
 
   echo "   $pass passed, $fail failed"
   [ "$fail" = 0 ] || FAILED=1

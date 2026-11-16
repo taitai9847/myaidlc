@@ -6,7 +6,7 @@ Every design and every code change is reviewed before the person approves it: Id
 
 | Kind | `subagent_type` | `model` |
 |---|---|---|
-| `doc` (requirements, plans, designs, code maps) | `general-purpose` | `opus` |
+| `doc` (requirements, plans, designs, code maps) | `general-purpose` | `sonnet` |
 | `code` | `feature-dev:code-reviewer` | `opus` |
 
 If `feature-dev:code-reviewer` cannot be started because that agent is not installed, run the code review with `general-purpose` and `model: "opus"`, using the code lens below.

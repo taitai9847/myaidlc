@@ -89,7 +89,7 @@ If, after a code plan was approved, the plan turns out to be wrong:
 1. If the step may have changed what a review covers, run `engine next` again first, so that `review.required` and `review.targets` are current. If `review.required` is `doc` or `code` and `review.recorded` is false, run the review in `protocol/review.md`.
 2. Run "Learn" below.
 3. If `gate` is `none`, report `completed`. Otherwise open the gate, as in "Gates".
-4. Run `engine next`, and carry out what it says.
+4. Run `engine next`, and carry out what it says as in "The loop" in `SKILL.md`, including its `break_point`.
 
 When the engine refuses any command, it prints why and what to do next. Do that, and never route around it. If an engine command fails with an error (exit status 1), tell the person in one line what failed, and stop.
 
@@ -97,7 +97,7 @@ When the engine refuses any command, it prints why and what to do next. Do that,
 
 When the directive's `mode` is `subagent` and its `step` is `build` (the build step of Code Generation):
 
-- Dispatch the agent named in `agent` with the Agent tool.
+- Dispatch the agent named in `agent` with the Agent tool. Its model is set in its agent file; do not override it.
 - It cannot see the conversation, so its prompt must hold everything it needs:
   - the step and the unit
   - the paths of the approved documents to follow

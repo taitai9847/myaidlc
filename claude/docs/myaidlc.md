@@ -2,7 +2,7 @@
 
 myaidlc runs new features and bug fixes in an existing project as a staged workflow. The person drives it: they say what to build, approve each result, and decide when to stop. It is a minimal take on AI-DLC (AI-Driven Development Life Cycle) for work on code that already exists, and it assumes no particular language, framework, or branching model.
 
-Spec version: 1
+Spec version: 2
 
 ## Principles, in order: the first wins any conflict
 
@@ -64,9 +64,10 @@ A **scope** is a production line: the stages a kind of work goes through. A **st
 | Scope | Stages | Depth | For |
 |---|---|---|---|
 | `feature` | all 10 | standard | new behavior in an existing project |
+| `small` | 0.1, 0.2, 1.1, 2.1, 3.2, 3.3, 4.1 | minimal | a small change to existing behavior that fits in one place; one unit, `main` |
 | `bugfix` | 0.1, 0.2, 1.1, 2.1, 3.2, 3.3, 4.1 | minimal | a known defect; one unit, `main`, with a regression test |
 
-- **"End of phase"**: the engine requires the review at the last stage of that phase in the active scope. That is delivery-planning in `feature` and reverse-engineering in `bugfix`. The review covers every document of the phase.
+- **"End of phase"**: the engine requires the review at the last stage of that phase in the active scope. That is delivery-planning in `feature` and reverse-engineering in `small` and `bugfix`. The review covers every document of the phase.
 - **Construction is unit-major**: each unit goes through functional-design and code-generation before the next unit starts, and build-and-test runs once after all units. When no units are planned, the engine uses a single unit, `main`.
 
 ### Stage files
@@ -135,7 +136,7 @@ Each event is one Markdown block, separated by `---`. A block holds a sequence n
 
 ## Reviews
 
-- Documents are reviewed by `general-purpose` with model `opus`.
+- Documents are reviewed by `general-purpose` with model `sonnet`.
 - Code is reviewed by `feature-dev:code-reviewer` with model `opus`; where that agent is not installed, `general-purpose` with model `opus` reviews it instead.
 - Reviewers never edit.
 - Findings are ranked P0 (wrong or broken), P1 (serious), P2 (worth improving), and P3 (detail).
@@ -151,6 +152,22 @@ The full procedure is in `skills/myaidlc/protocol/review.md`.
 - Code is read through Explore, with model `haiku` and thoroughness medium, started from the main conversation.
 - Each search covers only the area the work touches and its neighbors: what it imports, what imports it, the same package, tests, config.
 - Reverse Engineering turns the results into `codemap.md`. A subagent step gets the results in its prompt.
+
+## Models and sessions
+
+Token cost is kept down by the model each part runs on and by how long one conversation runs.
+
+| Part | Model |
+|---|---|
+| conductor (the main conversation) | Sonnet, chosen by the person with `/model`. A conductor on another model says so once, in one line |
+| developer agent (Code Generation's build step) | `sonnet`, set in its agent file |
+| Explore | `haiku` |
+| document review | `sonnet` |
+| code review | `opus` |
+
+- Every record lives in `docs/myaidlc/`, so a fresh conversation picks the work up with `/myaidlc resume`. Nothing depends on the conversation's history.
+- The `next` directive's `break_point` is true when the step is not started and the step before it ended a phase or a unit (Initialization excepted), unless the person jumped to it. There the conductor, if it has already run a step in this conversation, stops once and suggests `/clear` and `/myaidlc resume`; the person can also just go on.
+- In the middle of a step, `/compact` keeps the discussion that is not yet written down. After a compaction the conductor reads the protocol files again.
 
 ## The guard
 

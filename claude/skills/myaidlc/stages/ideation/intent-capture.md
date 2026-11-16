@@ -17,6 +17,7 @@ review: phase-doc
 3. If something only the person can decide is unclear (who it is for, what "done" looks like, what is out of scope), ask it as described in "Questions" in `protocol/stage-protocol.md`. Ask only what changes the outcome; do not ask what the request already answers.
 4. Write `intent.md` from the template in the directive's `produces`. Keep it short: an intent is a statement of the goal, not a specification.
    - Scope `bugfix`: the symptom, the steps to reproduce it, what should happen instead, and how often or for whom it happens. Mark the steps to reproduce "unconfirmed" if you have not been able to confirm them.
+   - Scope `small`: "What done looks like" is the acceptance check for the change, so write each item so a test or a command can show it.
 5. Follow "Finishing a step" in `protocol/stage-protocol.md`.
 
 ## Rules
