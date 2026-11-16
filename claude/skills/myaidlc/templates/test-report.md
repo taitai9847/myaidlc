@@ -4,8 +4,9 @@
 | Command | Result |
 |---|---|
 
-## Requirement coverage
-| Requirement | Shown by | Result |
+## Coverage
+<!-- feature: each requirement. bugfix and small: each item of "What done looks like" in intent.md. -->
+| Requirement or done item | Shown by | Result |
 |---|---|---|
 
 ## Fixes made during testing

@@ -557,7 +557,13 @@ cmd_next() {
             + [ $i.consumes[] as $n | $st[] | select((.produces | index($n)) and .for_each == "unit" and $i.unit != null)
                 | "\($idir)/construction/\($i.unit)/\(.slug)/\($n)" ]
           end),
-        carry: ($s.carry // [])
+        carry: ($s.carry // []),
+        break_point: (
+          ([ $ins[] | ikey ] | index($key)) as $n
+          | if $e.status == "pending" and (($e.jumped // false) | not) and $n != null and $n > 0 then
+              $ins[$n - 1] as $p
+              | $p.phase != "initialization" and ($p.phase != $i.phase or $p.unit != $i.unit)
+            else false end)
       }')"
 
   prods="$(jq -c '.produces[]' <<<"$draft" | while IFS= read -r p; do
@@ -593,7 +599,8 @@ cmd_next() {
      stage_file: $d.stage_file, agent: $d.agent, mode: $d.mode, output_dir: $d.output_dir,
      produces: $prods, consumes: $cons, rules: $rules, gate: $d.gate,
      review: {required: $rk, recorded: $recorded, targets: $targets},
-     carry_reviews: $d.carry, verify_commands: $verify, guard: $guard, source_writes: $d.source_writes, note: $note}'
+     carry_reviews: $d.carry, verify_commands: $verify, guard: $guard, source_writes: $d.source_writes,
+     break_point: $d.break_point, note: $note}'
 }
 
 # ---------------------------------------------------------------------------
@@ -940,6 +947,8 @@ cmd_jump() {
     STATE="$(jq --arg k "$target" '.stages[$k] = {status: "pending"}' <<<"$STATE")"
     audit STAGE_REOPENED From "$target" To "$target" Reopened "$target" "Person Reply" "$reply"
   fi
+  # the person moved here on purpose: this step is not a break point
+  STATE="$(jq --arg k "$target" '.stages[$k] = ((.stages[$k] // {status: "pending"}) + {jumped: true})' <<<"$STATE")"
   # keep the verified phases consistent with the new positions
   STATE="$(q '$s | .verified = [ phases[] as $p | select(phase_status($cat; $sc; $s; $p) == "Verified") | $p ]')"
   save_state

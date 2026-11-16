@@ -21,6 +21,7 @@ review: phase-doc
    - entry points, and the places a change would most likely go
    - where the tests are, how they run, and the conventions of the surrounding code (naming, errors, structure)
    - scope `bugfix`: the likely cause, with the code path from the trigger to the failure
+   - scope `small`: keep the map to the files the change touches and their tests
 5. Follow "Finishing a step" in `protocol/stage-protocol.md`. This step has no approval of its own; the next approval covers its facts.
 
 ## Rules

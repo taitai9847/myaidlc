@@ -6,7 +6,7 @@ title: Build and Test
 lead_agent: myaidlc-developer-agent
 mode: inline
 produces: [test-report.md]
-consumes: [requirements.md, delivery-plan.md, code-plan.md]
+consumes: [intent.md, codemap.md, requirements.md, delivery-plan.md, code-plan.md]
 gate: approval
 review: code-if-changed
 source_writes: allowed
@@ -19,7 +19,8 @@ source_writes: allowed
 4. Check that the work does what was asked, and record for each item the test or check that shows it:
    - Scope `feature`: every functional requirement, against its acceptance criteria.
    - Scope `bugfix`: the expected behavior in `intent.md`. Also show that the regression test failed before the fix (from the developer's report) and passes now.
-5. Write `test-report.md` from the template: the commands that were run and their results, the requirement coverage, anything still failing, and anything that needs a manual check.
+   - Scope `small`: each item of "What done looks like" in `intent.md`.
+5. Write `test-report.md` from the template: the commands that were run and their results, the coverage of each requirement (or, for scopes `bugfix` and `small`, each item of "What done looks like" in `intent.md`), anything still failing, and anything that needs a manual check.
 6. Follow "Finishing a step" in `protocol/stage-protocol.md`.
 
 ## Rules

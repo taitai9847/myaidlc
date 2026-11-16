@@ -6,9 +6,10 @@ myaidlc は、Claude Code で既存プロジェクトへの機能追加とバグ
 - **エンジンが帳簿をつける**：bash + jq のスクリプトが次のステップを決め、状態・監査ログ・承認の証跡・レビュー記録・コードのガードを管理します。
 - **コンダクターが作業する**：`/myaidlc` skill が 1 ステップずつ進めます。
   - コードは、変更箇所の付近だけを Explore（Haiku）で読みます。
-  - 設計とコード変更はすべて Opus でレビューし、P0 と P1 の指摘はすべて反映します。
+  - 設計はすべて Sonnet で、コード変更はすべて Opus でレビューし、P0 と P1 の指摘はすべて反映します。
+  - 実装は Sonnet の developer agent が行います。フェーズや Unit の区切りでは、会話を切り替えて再開するよう勧めます（トークンの節約のため）。
 
-5 フェーズ・10 ステージ・3 agent・2 スコープ（`feature` と `bugfix`）で構成しています。
+5 フェーズ・10 ステージ・3 agent・3 スコープ（`feature`、`small`、`bugfix`）で構成しています。
 
 - 設計の考え方は [AI-DLC（awslabs/aidlc-workflows）](https://github.com/awslabs/aidlc-workflows) を参考にしています。
 - 特定の言語・フレームワーク・ブランチ運用を前提にしません。
@@ -30,7 +31,7 @@ myaidlc/
 │       │   ├── SKILL.md
 │       │   ├── scripts/myaidlc-engine.sh   # エンジンと hook
 │       │   ├── stages/<phase>/<slug>.md    # 各ステップの内容（frontmatter = 経路、本文 = 手順）
-│       │   ├── scopes/{feature,bugfix}.md  # 作業の種類ごとに通るステップ
+│       │   ├── scopes/{feature,small,bugfix}.md  # 作業の種類ごとに通るステップ
 │       │   ├── protocol/                   # 全ステップとレビューの進め方
 │       │   ├── rules/defaults.md           # 既定のルール
 │       │   └── templates/                  # 成果物の既定テンプレート

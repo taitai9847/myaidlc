@@ -1,6 +1,6 @@
 ---
 name: myaidlc
-description: Run a feature or bug fix in an existing project through myaidlc's staged workflow (intent, code reading, requirements, plan, per-unit design and code, tests, handoff), with the person's approval at each gate and reviews at every phase. Use when the person types /myaidlc, asks to build a feature or fix a bug "with myaidlc", or asks to resume, check the status of, pause or jump within myaidlc work.
+description: Run a feature, a small change or a bug fix in an existing project through myaidlc's staged workflow (intent, code reading, requirements, plan, per-unit design and code, tests, handoff), with the person's approval at each gate and reviews at every phase. Use when the person types /myaidlc, asks to build a feature or fix a bug "with myaidlc", or asks to resume, check the status of, pause or jump within myaidlc work.
 argument-hint: "[what to build or fix | status | park | resume | jump <stage> | intent [name] | guard off|on]"
 ---
 
@@ -8,7 +8,9 @@ argument-hint: "[what to build or fix | status | park | resume | jump <stage> | 
 
 You are the conductor. The engine decides which step comes next and keeps every record; you carry out one step at a time and own how well it is done. The person drives: they decide what is built, whether each result is right, and when to stop.
 
-`engine` below means `.claude/skills/myaidlc/scripts/myaidlc-engine.sh`, run from the project root as a command of its own. Read `.claude/docs/myaidlc.md` once if you have not this session, then `protocol/stage-protocol.md` and `protocol/review.md` in this skill's folder.
+`engine` below means `.claude/skills/myaidlc/scripts/myaidlc-engine.sh`, run from the project root as a command of its own. Read `.claude/docs/myaidlc.md` once if you have not this session, then `protocol/stage-protocol.md` and `protocol/review.md` in this skill's folder. If the conversation was compacted and these files are no longer in front of you in full, read them again.
+
+myaidlc is designed to be conducted by a Sonnet model. If you are not a Sonnet model, tell the person once in this conversation, in one line, that `/model sonnet` conducts myaidlc at a much lower cost, and carry on.
 
 ## What the person asked
 
@@ -30,8 +32,9 @@ Before you start new work, check whether other work is open (`engine intent list
 ## Start new work
 
 1. If `.claude/settings.json` has no myaidlc hooks, tell the person once that `/myaidlc-setup` installs them (without them, approvals are not checked and the guard is off), and carry on.
-2. Choose the scope. Read `scopes/feature.md` and `scopes/bugfix.md`, then ask with AskUserQuestion, recommending the one that fits:
+2. Choose the scope. Read `scopes/feature.md`, `scopes/small.md` and `scopes/bugfix.md`, then ask with AskUserQuestion, recommending the one that fits:
    - **Feature**: new behavior, with requirements, a plan and units
+   - **Small change**: a small change to existing behavior that fits in one place; no requirements or plan, one unit
    - **Bugfix**: something behaves wrongly; find the cause and fix it with a regression test
 3. Pick a short lowercase label from the request (`saved-search`, `login-timeout`).
 4. Run `engine start --scope <scope> --label <label>`. When the request came as `/myaidlc <request>`, the engine takes it from that message. Otherwise, or if the person has typed something else since, pass the request on standard input with `--request-file -`, in their words.
@@ -43,7 +46,9 @@ Repeat until the engine says the work is done, the person stops, or you are wait
 
 1. Run `engine next`. It prints one JSON directive.
 2. Act on it:
-   - `run-stage`: run the step as described in `protocol/stage-protocol.md`.
+   - `run-stage`:
+     - First, if `break_point` is true and this conversation has already carried out an earlier step of this work, stop before starting the step. Tell the person in a few lines: what comes next; that everything so far is saved; that `/clear` and then `/myaidlc resume` continues from here in a fresh conversation, which costs far fewer tokens; and that they can also just say to go on. End your turn. Do this only the first time this conversation receives this step with `break_point` true; after that, or in a conversation that has carried out no earlier step, start the step.
+     - Run the step as described in `protocol/stage-protocol.md`.
      - If `status` is `awaiting` or `plan-awaiting`, the gate is already open: put the question to the person again.
      - Code Generation has two parts, given by `step`: `plan` (you write the code plan in this conversation) and `build` (you dispatch the developer agent).
    - `ask`: `message` is addressed to you. Put the question to the person in your own words. When `options` lists open work, let them choose, then run `engine intent switch <name>`.
